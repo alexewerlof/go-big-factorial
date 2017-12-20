@@ -17,8 +17,6 @@ func factorial(x int) *big.Int {
 	for i := 1; i <= x; i++ {
 		j := big.NewInt(int64(i))
 		vals <- j
-	}
-	for i := 0; i < x; i++ {
 		go func() {
 			c := <-count
 			if c == 0 {
