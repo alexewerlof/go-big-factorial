@@ -4,17 +4,37 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"strconv"
 )
 
 var big0 = big.NewInt(0)
 var big1 = big.NewInt(1)
 
-func factorial(x *big.Int) *big.Int {
-	if x.Cmp(big0) == 0 {
-		return big1
+func factorial(x int) *big.Int {
+	vals := make(chan *big.Int, x+1)
+	res := make(chan *big.Int)
+	count := make(chan int)
+	for i := 1; i <= x; i++ {
+		j := big.NewInt(int64(i))
+		vals <- j
 	}
-	var res, xMinOne big.Int
-	return res.Mul(x, factorial(xMinOne.Sub(x, big1)))
+	for i := 0; i < x; i++ {
+		go func() {
+			c := <-count
+			if c == 0 {
+				res <- <-vals
+			} else {
+				a := <-vals
+				b := <-vals
+				count <- c - 1
+				c := new(big.Int)
+				c.Mul(a, b)
+				vals <- c
+			}
+		}()
+	}
+	count <- x - 1
+	return <-res
 }
 
 func main() {
@@ -22,10 +42,9 @@ func main() {
 		panic("We need exactly one argument which is numerical")
 	}
 	nStr := os.Args[1]
-	nParsed := new(big.Int)
-	_, parsingSuccess := nParsed.SetString(nStr, 10)
-	if !parsingSuccess {
-		panic(fmt.Sprintf("Failed to parse %s %T as an integer number", nStr, nStr))
+	nParsed, parsingError := strconv.Atoi(nStr)
+	if parsingError != nil {
+		panic(fmt.Sprintf("Failed to parse %s %T as an integer number because %s", nStr, nStr, parsingError))
 	}
 	fmt.Printf("%d!\n", nParsed)
 	fmt.Println(factorial(nParsed))
