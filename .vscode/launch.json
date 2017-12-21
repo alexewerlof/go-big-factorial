@@ -15,7 +15,7 @@
             "program": "${workspaceRoot}/main.go",
             "env": {},
             "args": [
-                "50000"
+                "5"
             ],
             "showLog": true
         }
