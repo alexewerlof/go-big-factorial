@@ -21,6 +21,15 @@ func (cnt *opCounter) dec() (isNotZero bool) {
 	return
 }
 
+func worker(count *opCounter, vals chan *big.Int, res chan<- *big.Int) {
+	for count.dec() {
+		c := new(big.Int)
+		c.Mul(<-vals, <-vals)
+		vals <- c
+	}
+	res <- <-vals
+}
+
 func factorial(x int) *big.Int {
 	vals := make(chan *big.Int, x+1)
 	res := make(chan *big.Int)
@@ -29,14 +38,7 @@ func factorial(x int) *big.Int {
 		val := big.NewInt(int64(i))
 		vals <- val
 	}
-	go func() {
-		for count.dec() {
-			c := new(big.Int)
-			c.Mul(<-vals, <-vals)
-			vals <- c
-		}
-		res <- <-vals
-	}()
+	go worker(&count, vals, res)
 	return <-res
 }
 
