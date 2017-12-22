@@ -33,8 +33,8 @@ func worker(count *opCounter, vals chan *big.Int, res chan<- *big.Int) {
 func factorial(x int) *big.Int {
 	vals := make(chan *big.Int, x+1)
 	res := make(chan *big.Int)
-	count := opCounter{val: x}
-	for i := 1; i <= x; i++ {
+	count := opCounter{val: x - 1}
+	for i := 2; i <= x; i++ {
 		val := big.NewInt(int64(i))
 		vals <- val
 	}
@@ -44,12 +44,15 @@ func factorial(x int) *big.Int {
 
 func main() {
 	if len(os.Args) != 2 {
-		panic("We need exactly one argument which is numerical")
+		panic("We need exactly one argument which should be a number bigger than 2")
 	}
 	xStr := os.Args[1]
 	x, parsingError := strconv.Atoi(xStr)
 	if parsingError != nil {
 		panic(fmt.Sprintf("Failed to parse %s %T as an integer number because %s", xStr, xStr, parsingError))
+	}
+	if x < 2 {
+		panic("The number should be bigger than 2")
 	}
 	fmt.Printf("%d! = %d\n", x, factorial(x))
 }
