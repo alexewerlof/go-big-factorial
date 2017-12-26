@@ -31,8 +31,8 @@ func factorial(x int64) *big.Int {
 		workers.change(1)
 		go func(a, b *big.Int) {
 			res := new(big.Int)
-			vals <- res.Mul(a, b)
 			workers.change(-1)
+			vals <- res.Mul(a, b)
 		}(<-vals, <-vals)
 	}
 	return <-vals
