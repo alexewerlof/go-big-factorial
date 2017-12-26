@@ -13,12 +13,10 @@ type workerCounter struct {
 	mutex sync.Mutex
 }
 
-func (workers *workerCounter) change(diff int) (isNotZero bool) {
+func (workers *workerCounter) change(diff int) {
 	workers.mutex.Lock()
 	workers.count += diff
-	defer workers.mutex.Unlock()
-	isNotZero = workers.count != 0
-	return
+	workers.mutex.Unlock()
 }
 
 func factorial(x int64) *big.Int {
