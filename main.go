@@ -8,38 +8,34 @@ import (
 	"sync"
 )
 
-type opCounter struct {
-	val   int
+type workerCounter struct {
+	count int
 	mutex sync.Mutex
 }
 
-func (cnt *opCounter) dec() (isNotZero bool) {
-	cnt.mutex.Lock()
-	cnt.val--
-	defer cnt.mutex.Unlock()
-	isNotZero = cnt.val != 0
+func (workers *workerCounter) change(diff int) (isNotZero bool) {
+	workers.mutex.Lock()
+	workers.count += diff
+	defer workers.mutex.Unlock()
+	isNotZero = workers.count != 0
 	return
 }
 
-func worker(count *opCounter, vals chan *big.Int, res chan<- *big.Int) {
-	for count.dec() {
-		c := new(big.Int)
-		c.Mul(<-vals, <-vals)
-		vals <- c
+func factorial(x int64) *big.Int {
+	vals := make(chan *big.Int, x)
+	for i := int64(2); i <= x; i++ {
+		vals <- big.NewInt(i)
 	}
-	res <- <-vals
-}
-
-func factorial(x int) *big.Int {
-	vals := make(chan *big.Int, x+1)
-	res := make(chan *big.Int)
-	count := opCounter{val: x - 1}
-	for i := 2; i <= x; i++ {
-		val := big.NewInt(int64(i))
-		vals <- val
+	var workers workerCounter
+	for c := len(vals); c > 1; c = workers.count + len(vals) {
+		workers.change(1)
+		go func(a, b *big.Int) {
+			res := new(big.Int)
+			vals <- res.Mul(a, b)
+			workers.change(-1)
+		}(<-vals, <-vals)
 	}
-	go worker(&count, vals, res)
-	return <-res
+	return <-vals
 }
 
 func main() {
@@ -54,5 +50,5 @@ func main() {
 	if x < 2 {
 		panic("The number should be bigger than 2")
 	}
-	fmt.Printf("%d! = %d\n", x, factorial(x))
+	fmt.Printf("%d! = %d\n", x, factorial(int64(x)))
 }
