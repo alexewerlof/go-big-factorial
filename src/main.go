@@ -34,36 +34,23 @@ func mul(a, b *big.Int) (res *big.Int) {
 func factorial(x int64) *big.Int {
 	fmt.Println("Digesting...")
 	pows := digestAll(x)
-	vals := make(chan *big.Int, len(pows))
+	powsLen := len(pows)
+	vals := make(chan *big.Int, powsLen)
 	//fmt.Println("Digested to", pows)
-	fmt.Println("Powering...")
+	fmt.Println("\nPowering...")
 	for a, b := range pows {
 		//fmt.Println("a=", a, "b=", b, "pow=", pow(a, b))
-		fmt.Print(".")
+		fmt.Print("^")
 		vals <- pow(a, b)
 	}
 	pows = nil
-
-	/*
-		for i := 1; i < len(pows); i++ {
-			vals <- mul(<-vals, <-vals)
-		}
-		return <-vals
-	*/
-	fmt.Println("Multiplying")
-	var workers workerCounter
-	for c := len(vals); c > 1; c = workers.count + len(vals) {
-		workers.mutex.Lock()
-		workers.count++
-		workers.mutex.Unlock()
-		go func(a, b *big.Int) {
-			res := mul(a, b)
-			workers.mutex.Lock()
-			vals <- res
-			workers.count--
-			workers.mutex.Unlock()
-		}(<-vals, <-vals)
+	fmt.Println("\nMultiplying...")
+	for i := 1; i < powsLen; i++ {
+		fmt.Print("x")
+		vals <- mul(<-vals, <-vals)
 	}
+	fmt.Println("\nDone!")
+	defer fmt.Println("Converting to string...")
 	return <-vals
 }
 

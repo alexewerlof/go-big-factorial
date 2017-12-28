@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -38,6 +39,7 @@ func digestAll(n int64) (pows map[int64]int64) {
 	pows = make(map[int64]int64)
 	for i := int64(2); i <= n; i++ {
 		res := digest(i, &primes)
+		fmt.Print(":")
 		if len(res) == 1 {
 			primes = append(primes, res[0])
 			//fmt.Println("Oh a new prime:", res, primes)
