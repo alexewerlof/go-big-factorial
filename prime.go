@@ -4,22 +4,16 @@ import (
 	"math"
 )
 
-func isDivisible(x, prime float64) bool {
-	return math.Mod(x, prime) == 0
-}
-
 func getFirstPrimeFactor(x uint64, primes []uint64) uint64 {
-	xF64 := float64(x)
-	limit := math.Sqrt(xF64)
+	xSqrt := uint64(math.Sqrt(float64(x)))
 	//fmt.Println("x=", x)
-	for _, p := range primes {
-		pF64 := float64(p)
+	for _, prime := range primes {
 		//fmt.Println("  p=", p)
-		if pF64 > limit {
+		if prime > xSqrt {
 			break
 		}
-		if isDivisible(xF64, pF64) {
-			return p
+		if x%prime == 0 {
+			return prime
 		}
 	}
 	return x
@@ -44,7 +38,7 @@ func digestAllUnder(n uint64) (pows map[uint64]uint64) {
 	pows = make(map[uint64]uint64)
 	for i := uint64(2); i <= n; i++ {
 		res := digest(i, primes)
-		//fmt.Print(":")
+		//fmt.Print("/")
 		if len(res) == 1 {
 			primes = append(primes, res[0])
 			//fmt.Println("Oh a new prime:", res, primes)

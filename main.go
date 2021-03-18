@@ -26,10 +26,10 @@ func factorial(x uint64) *big.Int {
 	vals := make(chan *big.Int, powsLen)
 	//fmt.Println("Digested to", pows)
 	fmt.Println("\nPowering...")
-	for a, b := range pows {
+	for prime, power := range pows {
 		//fmt.Println("a=", a, "b=", b, "pow=", pow(a, b))
 		fmt.Print("^")
-		vals <- pow(a, b)
+		vals <- pow(prime, power)
 	}
 	pows = nil
 	fmt.Println("\nMultiplying...")
@@ -43,7 +43,6 @@ func factorial(x uint64) *big.Int {
 }
 
 func main() {
-
 	if len(os.Args) != 2 {
 		panic("We need exactly one argument which should be a number bigger than 2")
 	}
