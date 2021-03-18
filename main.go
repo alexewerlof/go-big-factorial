@@ -5,23 +5,11 @@ import (
 	"math/big"
 	"os"
 	"strconv"
-	"sync"
 )
 
-type workerCounter struct {
-	count int
-	mutex sync.Mutex
-}
-
-func (workers *workerCounter) change(diff int) {
-	workers.mutex.Lock()
-	workers.count += diff
-	workers.mutex.Unlock()
-}
-
-func pow(a, b int64) (res *big.Int) {
+func pow(a, b uint64) (res *big.Int) {
 	res = new(big.Int)
-	res.Exp(big.NewInt(a), big.NewInt(b), nil)
+	res.Exp(big.NewInt(int64(a)), big.NewInt(int64(b)), nil)
 	return
 }
 
@@ -31,9 +19,9 @@ func mul(a, b *big.Int) (res *big.Int) {
 	return
 }
 
-func factorial(x int64) *big.Int {
+func factorial(x uint64) *big.Int {
 	fmt.Println("Digesting...")
-	pows := digestAll(x)
+	pows := digestAllUnder(x)
 	powsLen := len(pows)
 	vals := make(chan *big.Int, powsLen)
 	//fmt.Println("Digested to", pows)
@@ -67,5 +55,5 @@ func main() {
 	if x < 2 {
 		panic("The number should be bigger than 2")
 	}
-	fmt.Printf("%d! = %d\n", x, factorial(int64(x)))
+	fmt.Printf("%d! = %d\n", x, factorial(uint64(x)))
 }
