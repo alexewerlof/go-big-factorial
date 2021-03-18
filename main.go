@@ -7,35 +7,55 @@ import (
 	"strconv"
 )
 
-func pow(a, b uint64) (res *big.Int) {
-	res = new(big.Int)
-	res.Exp(big.NewInt(int64(a)), big.NewInt(int64(b)), nil)
-	return
+const log = true
+
+func toBig(x uint64) *big.Int {
+	return big.NewInt(int64(x))
 }
 
-func mul(a, b *big.Int) (res *big.Int) {
-	res = new(big.Int)
-	res.Mul(a, b)
-	return
+func pow(a, b uint64, vals chan<- *big.Int) {
+	var res big.Int
+	if log {
+		fmt.Println(a, "^", b)
+	}
+	vals <- res.Exp(toBig(a), toBig(b), nil)
 }
 
-func factorial(x uint64) *big.Int {
+func mul(vals chan *big.Int, done chan<- bool) {
+	var res big.Int
+	if log {
+		fmt.Println("x")
+	}
+	vals <- res.Mul(<-vals, <-vals)
+	done <- true
+}
+
+func factorial(n uint64) *big.Int {
 	fmt.Println("Digesting...")
-	pows := digestAllUnder(x)
-	powsLen := len(pows)
+	primePowers := digestAllUnder(n)
+	powsLen := len(primePowers)
 	vals := make(chan *big.Int, powsLen)
 	//fmt.Println("Digested to", pows)
 	fmt.Println("\nPowering...")
-	for prime, power := range pows {
+	for prime, power := range primePowers {
 		//fmt.Println("a=", a, "b=", b, "pow=", pow(a, b))
-		fmt.Print("^")
-		vals <- pow(prime, power)
+		if power == 1 {
+			vals <- toBig(prime)
+		} else {
+			go pow(prime, power, vals)
+		}
 	}
-	pows = nil
+	primePowers = nil
 	fmt.Println("\nMultiplying...")
+	multiOp := make(chan bool)
 	for i := 1; i < powsLen; i++ {
-		fmt.Print("x")
-		vals <- mul(<-vals, <-vals)
+		go mul(vals, multiOp)
+	}
+	for i := 1; i < powsLen; i++ {
+		x := <-multiOp
+		if log {
+			fmt.Println("One multiplication operation was done", i, x)
+		}
 	}
 	fmt.Println("\nDone!")
 	defer fmt.Println("Converting to string...")
