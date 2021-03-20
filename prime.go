@@ -1,10 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"math"
-	"math/big"
-	"sort"
 )
 
 func getFirstPrimeFactor(x uint64, primes []uint64) uint64 {
@@ -22,7 +19,7 @@ func getFirstPrimeFactor(x uint64, primes []uint64) uint64 {
 	return x
 }
 
-func digest(n uint64, primes []uint64) (res []uint64) {
+func primeFactors(n uint64, primes []uint64) (res []uint64) {
 	// nSqr := math.Sqrt(n)
 	x := n
 	for {
@@ -41,48 +38,13 @@ type PP struct {
 	power uint64
 }
 
-func powTableToPPArr(pows map[uint64]uint64) []PP {
-	pp := make([]PP, 0, len(pows))
-	i := 0
-	for prime, power := range pows {
-		fmt.Println(prime, power)
-		pp = append(pp, PP{prime, power})
-		i++
-	}
-	fmt.Println("pp", pp)
+type PPTable map[uint64]uint64
 
-	sort.Slice(pp, func(i, j int) bool {
-		if pp[i].power == pp[j].power {
-			return pp[i].prime < pp[j].prime
-		}
-		return pp[i].power < pp[j].power
-	})
-
-	fmt.Println("pp", pp)
-	return pp
-}
-
-func reducer(pows map[uint64]uint64) map[uint64]*big.Int {
-	pp := powTableToPPArr(pows)
-	red := make(map[uint64]*big.Int)
-	for _, ppi := range pp {
-		if x, ok := red[ppi.power]; ok {
-			red[ppi.power] = x.Mul(x, toBig(ppi.prime))
-		} else {
-			red[ppi.power] = toBig(ppi.prime)
-		}
-	}
-
-	fmt.Println("red", red)
-
-	return red
-}
-
-func digestAllUnder(n uint64) (pows map[uint64]uint64) {
+func allPrimeFactors(n uint64) (PPTable, []uint64) {
 	var primes []uint64
-	pows = make(map[uint64]uint64)
+	var pows = make(PPTable)
 	for i := uint64(2); i <= n; i++ {
-		res := digest(i, primes)
+		res := primeFactors(i, primes)
 		//fmt.Print("/")
 		if len(res) == 1 {
 			primes = append(primes, res[0])
@@ -99,5 +61,11 @@ func digestAllUnder(n uint64) (pows map[uint64]uint64) {
 		}
 		//fmt.Println("digest", i, res)
 	}
-	return pows
+	return pows, primes
+}
+
+func allMergedReducedPrimeFactors(n uint64) PPBigTable {
+	pows, primes := allPrimeFactors(n)
+
+	return merge(reduce(pows), primes)
 }
