@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"math"
+	"math/big"
+	"sort"
 )
 
 func getFirstPrimeFactor(x uint64, primes []uint64) uint64 {
@@ -31,6 +34,48 @@ func digest(n uint64, primes []uint64) (res []uint64) {
 		x /= p
 	}
 	return
+}
+
+type PP struct {
+	prime uint64
+	power uint64
+}
+
+func powTableToPPArr(pows map[uint64]uint64) []PP {
+	pp := make([]PP, 0, len(pows))
+	i := 0
+	for prime, power := range pows {
+		fmt.Println(prime, power)
+		pp = append(pp, PP{prime, power})
+		i++
+	}
+	fmt.Println("pp", pp)
+
+	sort.Slice(pp, func(i, j int) bool {
+		if pp[i].power == pp[j].power {
+			return pp[i].prime < pp[j].prime
+		}
+		return pp[i].power < pp[j].power
+	})
+
+	fmt.Println("pp", pp)
+	return pp
+}
+
+func reducer(pows map[uint64]uint64) map[uint64]*big.Int {
+	pp := powTableToPPArr(pows)
+	red := make(map[uint64]*big.Int)
+	for _, ppi := range pp {
+		if x, ok := red[ppi.power]; ok {
+			red[ppi.power] = x.Mul(x, toBig(ppi.prime))
+		} else {
+			red[ppi.power] = toBig(ppi.prime)
+		}
+	}
+
+	fmt.Println("red", red)
+
+	return red
 }
 
 func digestAllUnder(n uint64) (pows map[uint64]uint64) {

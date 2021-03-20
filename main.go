@@ -38,7 +38,7 @@ func factorial(n uint64) *big.Int {
 	//fmt.Println("Digested to", pows)
 	fmt.Println("\nPowering...")
 	for prime, power := range primePowers {
-		//fmt.Println("a=", a, "b=", b, "pow=", pow(a, b))
+		fmt.Println(prime, " ** ", power)
 		if power == 1 {
 			vals <- toBig(prime)
 		} else {
