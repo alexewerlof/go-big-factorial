@@ -69,3 +69,9 @@ func merge(pows PPBigTable, primes []uint64) PPBigTable {
 
 	return m
 }
+
+func allMergedReducedPrimeFactors(n uint64) PPBigTable {
+	pows, primes := allPrimeFactors(n)
+
+	return merge(reduce(pows), primes)
+}

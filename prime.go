@@ -63,9 +63,3 @@ func allPrimeFactors(n uint64) (PPTable, []uint64) {
 	}
 	return pows, primes
 }
-
-func allMergedReducedPrimeFactors(n uint64) PPBigTable {
-	pows, primes := allPrimeFactors(n)
-
-	return merge(reduce(pows), primes)
-}
