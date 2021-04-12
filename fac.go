@@ -55,6 +55,5 @@ func factorial(n uint64) *big.Int {
 		}
 	}
 	fmt.Println("\nDone!")
-	defer fmt.Println("Converting to string...")
 	return <-vals
 }

@@ -18,5 +18,7 @@ func main() {
 	if x < 2 {
 		panic("The number should be bigger than 2")
 	}
-	fmt.Printf("%d! = %d\n", x, factorial(uint64(x)))
+	result := factorial(uint64(x))
+	fmt.Println("Converting to string...")
+	fmt.Printf("%d! = %d\n", x, result)
 }

@@ -17,6 +17,21 @@ It's quite fast compared to traditional algorithms (and even my best implementat
 
 1,000,000! takes less than a minute on a 10th gen i5 CPU with 8GB RAM on Windows 10.
 
+## Test
+
+```
+go test .
+```
+## Benchmark
+
+Breaking down the text above, we pass the -bench flag to go test supplying a regular expression matching everything. You must pass a valid regex to -bench, just passing -bench is a syntax error. You can use this property to run a subset of benchmarks.
+
+[ref](https://dave.cheney.net/2013/06/30/how-to-write-benchmarks-in-go)
+
+```
+go test -bench=.
+```
+
 # Debug
 
 You can run this project in VS Code directly.
