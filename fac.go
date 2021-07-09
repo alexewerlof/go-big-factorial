@@ -7,12 +7,23 @@ import (
 
 const log = false
 
+var zero = big.NewInt(0)
+var one = big.NewInt(1)
+var two = big.NewInt(2)
+
 func pow(a *big.Int, b uint64, result chan<- *big.Int) {
 	var res big.Int
 	if log {
 		fmt.Println(a, "^", b)
 	}
-	result <- res.Exp(a, toBig(b), nil)
+	if a.Cmp(one) == 0 {
+		result <- a
+	} else if a.Cmp(two) == 0 {
+		// It is much faster to compute powers of two by just setting a big on an all-zero number
+		result <- res.SetBit(zero, int(b), 1)
+	} else {
+		result <- res.Exp(a, toBig(b), nil)
+	}
 }
 
 func mul(values chan *big.Int, done chan<- bool) {
