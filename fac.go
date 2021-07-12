@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/big"
+	"time"
 )
 
 const log = false
@@ -12,10 +13,12 @@ var one = big.NewInt(1)
 var two = big.NewInt(2)
 
 func pow(a *big.Int, b uint64, result chan<- *big.Int) {
-	var res big.Int
 	if log {
-		fmt.Println(a, "^", b)
+		// fmt.Println(a, "^", b)
+		var start = time.Now()
+		defer fmt.Println("^", time.Since(start))
 	}
+	var res big.Int
 	if a.Cmp(one) == 0 {
 		result <- a
 	} else if a.Cmp(two) == 0 {
@@ -27,10 +30,12 @@ func pow(a *big.Int, b uint64, result chan<- *big.Int) {
 }
 
 func mul(values chan *big.Int, done chan<- bool) {
-	var res big.Int
 	if log {
-		fmt.Println("x")
+		// fmt.Println(a, "×", b)
+		var start = time.Now()
+		defer fmt.Println("×", time.Since(start))
 	}
+	var res big.Int
 	values <- res.Mul(<-values, <-values)
 	done <- true
 }
