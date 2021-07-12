@@ -75,6 +75,23 @@ func TestPowTableToPPArr(t *testing.T) {
 	}
 }
 
+func (x *PPBigTable) deepEquals(y *PPBigTable, t *testing.T) {
+	t.Helper()
+
+	var lenX = len(*x)
+	var lenY = len(*y)
+
+	if lenX != lenY {
+		t.Errorf("the lengths don't match. Expected %d but got %d", lenX, lenY)
+	}
+
+	for power, prime := range *y {
+		if (*x)[power].Cmp(prime) != 0 {
+			t.Errorf("Missing entry for power %d prime %d", power, prime)
+		}
+	}
+}
+
 func TestReduce(t *testing.T) {
 	var input PPTable = PPTable{
 		31: 3,
@@ -120,15 +137,7 @@ func TestReduce(t *testing.T) {
 
 	result := reduce(input)
 
-	if len(expected) != len(result) {
-		t.Errorf("the lengths don't match. Expected %d but got %d", len(expected), len(result))
-	}
-
-	for power, prime := range result {
-		if expected[power].Cmp(prime) != 0 {
-			t.Errorf("Missing entry for power %d prime %d", power, prime)
-		}
-	}
+	result.deepEquals(&expected, t)
 }
 
 func TestMerge(t *testing.T) {
@@ -157,13 +166,5 @@ func TestMerge(t *testing.T) {
 
 	result := merge(input, primes)
 
-	if len(expected) != len(result) {
-		t.Errorf("the lengths don't match. Expected %d but got %d", len(expected), len(result))
-	}
-
-	for power, prime := range result {
-		if expected[power].Cmp(prime) != 0 {
-			t.Errorf("Missing entry for power %d prime %d", power, prime)
-		}
-	}
+	result.deepEquals(&expected, t)
 }

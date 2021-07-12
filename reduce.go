@@ -34,16 +34,22 @@ func reduce(pows PPTable) PPBigTable {
 	pp := powTableToPPArr(pows)
 	red := make(PPBigTable)
 	for _, ppi := range pp {
-		if x, ok := red[ppi.power]; ok {
-			red[ppi.power] = x.Mul(x, toBig(ppi.prime))
-		} else {
-			red[ppi.power] = toBig(ppi.prime)
-		}
+		red.setEl(ppi.power, toBig(ppi.prime))
 	}
 
 	// fmt.Println("reduced", red)
 
 	return red
+}
+
+func (p *PPBigTable) setEl(power uint64, prime *big.Int) bool {
+	if x, ok := (*p)[power]; ok {
+		var res big.Int
+		(*p)[power] = res.Mul(x, prime)
+		return true
+	}
+	(*p)[power] = prime
+	return false
 }
 
 func merge(pows PPBigTable, primes []uint64) PPBigTable {
@@ -54,18 +60,11 @@ func merge(pows PPBigTable, primes []uint64) PPBigTable {
 		factors := primeFactors(power, primes)
 
 		for _, factor := range factors {
-			if x, ok := m[factor]; ok {
-				// fmt.Println("Yes", power, prime, factor, x)
-				var res big.Int
-				m[factor] = res.Mul(x, prime)
-			} else {
-				// fmt.Println("no", power, prime, factor)
-				m[factor] = prime
-			}
+			m.setEl(factor, prime)
 		}
 	}
 
-	fmt.Println("Merged", len(pows), "to", len(m))
+	fmt.Println("Merged", len(pows), "to", len(m), m)
 
 	return m
 }
