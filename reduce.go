@@ -73,7 +73,9 @@ func merge(ppBigMap PPBigMap, primes []uint64) PPBigMap {
 }
 
 func allMergedReducedPrimeFactors(n uint64) PPBigMap {
-	pows, primes := factorize(n)
+	// pows, primes := factorize(n)
+	// return merge(reduce(pows), primes)
+	pows, _ := factorize(n)
 
-	return merge(reduce(pows), primes)
+	return reduce(pows)
 }

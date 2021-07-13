@@ -53,18 +53,27 @@ func mul(m MulArgs) *big.Int {
 func powWorker(powChan <-chan PowArgs, feedChan chan<- *big.Int) {
 	for ppBig := range powChan {
 		feedChan <- pow(ppBig)
+		if log {
+			fmt.Println("feedChan <- ", ppBig.x.String(), " ** ", ppBig.n)
+		}
 	}
 }
 
 func feedMulWorkers(feedChan <-chan *big.Int, mulChan chan<- MulArgs, times int) {
 	for i := 0; i < times; i++ {
 		mulChan <- MulArgs{a: <-feedChan, b: <-feedChan}
+		if log {
+			fmt.Println("mulChan <- two numbers")
+		}
 	}
 }
 
 func mulWorker(mulChan <-chan MulArgs, feedChan chan<- *big.Int) {
 	for mulBig := range mulChan {
 		feedChan <- mul(mulBig)
+		if log {
+			fmt.Println("feedChan <- ", mulBig.a.String(), " x ", mulBig.b.String())
+		}
 	}
 }
 
@@ -86,6 +95,9 @@ func factorial(n uint64) *big.Int {
 	}
 
 	for n, x := range primePowers {
+		if log {
+			fmt.Println("powChan <- ", x.String(), n)
+		}
 		powChan <- PowArgs{x, n}
 	}
 
@@ -93,6 +105,6 @@ func factorial(n uint64) *big.Int {
 
 	primePowers = nil
 
-	fmt.Println("\nDone!")
+	defer fmt.Println("\nDone!")
 	return <-feedChan
 }
