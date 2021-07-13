@@ -6,15 +6,14 @@ import (
 	"sort"
 )
 
-type PPBigTable map[uint64]*big.Int
+type PPBigMap map[uint64]*big.Int
 
-func powTableToPPArr(pows PPTable) []PP {
-	pp := make([]PP, 0, len(pows))
-	i := 0
-	for prime, power := range pows {
+func ppMapToArr(ppMap PPMap) []PP {
+	pp := make([]PP, 0, len(ppMap))
+
+	for prime, power := range ppMap {
 		// fmt.Println(prime, power)
 		pp = append(pp, PP{prime, power})
-		i++
 	}
 	// fmt.Println("pp", pp)
 
@@ -29,12 +28,26 @@ func powTableToPPArr(pows PPTable) []PP {
 	return pp
 }
 
-func reduce(pows PPTable) PPBigTable {
+func (p *PPBigMap) update(power uint64, prime *big.Int) bool {
+	if x, ok := (*p)[power]; ok {
+		var res big.Int
+		(*p)[power] = res.Mul(x, prime)
+		return true
+	}
+
+	(*p)[power] = prime
+
+	return false
+}
+
+func reduce(pows PPMap) PPBigMap {
 	fmt.Println("Reducing")
-	pp := powTableToPPArr(pows)
-	red := make(PPBigTable)
+
+	pp := ppMapToArr(pows)
+	red := make(PPBigMap)
+
 	for _, ppi := range pp {
-		red.setEl(ppi.power, toBig(ppi.prime))
+		red.update(ppi.power, toBig(ppi.prime))
 	}
 
 	// fmt.Println("reduced", red)
@@ -42,34 +55,24 @@ func reduce(pows PPTable) PPBigTable {
 	return red
 }
 
-func (p *PPBigTable) setEl(power uint64, prime *big.Int) bool {
-	if x, ok := (*p)[power]; ok {
-		var res big.Int
-		(*p)[power] = res.Mul(x, prime)
-		return true
-	}
-	(*p)[power] = prime
-	return false
-}
-
-func merge(pows PPBigTable, primes []uint64) PPBigTable {
+func merge(ppBigMap PPBigMap, primes []uint64) PPBigMap {
 	fmt.Println("Merging")
-	m := make(PPBigTable)
+	m := make(PPBigMap)
 
-	for power, prime := range pows {
+	for power, prime := range ppBigMap {
 		factors := primeFactors(power, primes)
 
 		for _, factor := range factors {
-			m.setEl(factor, prime)
+			m.update(factor, prime)
 		}
 	}
 
-	fmt.Println("Merged", len(pows), "to", len(m), m)
+	fmt.Println("Merged", len(ppBigMap), "to", len(m), m)
 
 	return m
 }
 
-func allMergedReducedPrimeFactors(n uint64) PPBigTable {
+func allMergedReducedPrimeFactors(n uint64) PPBigMap {
 	pows, primes := factorize(n)
 
 	return merge(reduce(pows), primes)

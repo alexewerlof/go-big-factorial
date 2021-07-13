@@ -5,8 +5,8 @@ import (
 	"testing"
 )
 
-func TestPowTableToPPArr(t *testing.T) {
-	var input PPTable = PPTable{
+func TestPpMapToArr(t *testing.T) {
+	input := PPMap{
 		31: 3,
 		59: 1,
 		83: 1,
@@ -34,7 +34,7 @@ func TestPowTableToPPArr(t *testing.T) {
 		71: 1,
 	}
 
-	var expected []PP = []PP{
+	expected := []PP{
 		{53, 1},
 		{59, 1},
 		{61, 1},
@@ -62,7 +62,7 @@ func TestPowTableToPPArr(t *testing.T) {
 		{2, 97},
 	}
 
-	result := powTableToPPArr(input)
+	result := ppMapToArr(input)
 
 	if len(expected) != len(result) {
 		t.Errorf("the lengths don't match. Expected %d but got %d", len(expected), len(result))
@@ -75,7 +75,7 @@ func TestPowTableToPPArr(t *testing.T) {
 	}
 }
 
-func (x *PPBigTable) deepEquals(y *PPBigTable, t *testing.T) {
+func (x *PPBigMap) deepEquals(y *PPBigMap, t *testing.T) {
 	t.Helper()
 
 	var lenX = len(*x)
@@ -93,7 +93,7 @@ func (x *PPBigTable) deepEquals(y *PPBigTable, t *testing.T) {
 }
 
 func TestReduce(t *testing.T) {
-	var input PPTable = PPTable{
+	input := PPMap{
 		31: 3,
 		59: 1,
 		83: 1,
@@ -121,7 +121,7 @@ func TestReduce(t *testing.T) {
 		71: 1,
 	}
 
-	var expected PPBigTable = PPBigTable{
+	expected := PPBigMap{
 		1:  big.NewInt(53 * 59 * 61 * 67 * 71 * 73 * 79 * 83 * 89 * 97),
 		2:  big.NewInt(37 * 41 * 43 * 47),
 		3:  big.NewInt(29 * 31),
@@ -141,7 +141,7 @@ func TestReduce(t *testing.T) {
 }
 
 func TestMerge(t *testing.T) {
-	var input PPBigTable = PPBigTable{
+	input := PPBigMap{
 		1:  big.NewInt(53 * 59 * 61 * 67 * 71 * 73 * 79 * 83 * 89 * 97),
 		2:  big.NewInt(37 * 41 * 43 * 47),
 		3:  big.NewInt(29 * 31),
@@ -155,7 +155,7 @@ func TestMerge(t *testing.T) {
 		97: big.NewInt(2),
 	}
 
-	var expected PPBigTable = PPBigTable{
+	expected := PPBigMap{
 		1:  big.NewInt(53 * 59 * 61 * 67 * 71 * 73 * 79 * 83 * 89 * 97),
 		2:  big.NewInt(37 * 41 * 43 * 47 * 23 * 23 * 7 * 7 * 7 * 7 * 5 * 5 * 5 * 3 * 3 * 3 * 3),
 		3:  big.NewInt(29 * 31 * 11 * 11 * 5 * 3),

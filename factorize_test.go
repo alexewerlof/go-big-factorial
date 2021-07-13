@@ -12,32 +12,28 @@ func sliceEq(slice1, slice2 []uint64) bool {
 	if len(slice1) != len(slice2) {
 		return false
 	}
+
 	for i, v := range slice1 {
 		if v != slice2[i] {
 			return false
 		}
 	}
+
 	return true
 }
 
 func TestPrimeFactors(t *testing.T) {
-	for6 := primeFactors(6, primes)
-	if !sliceEq(for6, []uint64{2, 3}) {
-		t.Error("Could not break 6 to its primes", for6)
+	knownResults := map[uint64][]uint64{
+		2:  {2},
+		6:  {2, 3},
+		13: {13},
+		24: {2, 2, 2, 3},
 	}
 
-	for24 := primeFactors(24, primes)
-	if !sliceEq(for24, []uint64{2, 2, 2, 3}) {
-		t.Error("Could not break 24 to its primes", for24)
-	}
-
-	for13 := primeFactors(13, primes)
-	if !sliceEq(for13, []uint64{13}) {
-		t.Error("Could not break 13 to its primes", for13)
-	}
-
-	for2 := primeFactors(2, primes)
-	if !sliceEq(for2, []uint64{2}) {
-		t.Error("Could not break 2 to its primes", for2)
+	for n, expected := range knownResults {
+		result := primeFactors(6, primes)
+		if !sliceEq(result, expected) {
+			t.Errorf("Could not break %d to its primes\nExpected: %v\nGot:     %v", n, expected, result)
+		}
 	}
 }

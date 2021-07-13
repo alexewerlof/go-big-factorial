@@ -38,11 +38,11 @@ type PP struct {
 	power uint64
 }
 
-type PPTable map[uint64]uint64
+type PPMap map[uint64]uint64
 
-func factorize(n uint64) (PPTable, []uint64) {
+func factorize(n uint64) (PPMap, []uint64) {
 	var primes []uint64
-	var pows = make(PPTable)
+	var pows = make(PPMap)
 	for i := uint64(2); i <= n; i++ {
 		res := primeFactors(i, primes)
 		//fmt.Print("/")
