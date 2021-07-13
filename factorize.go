@@ -40,7 +40,7 @@ type PP struct {
 
 type PPTable map[uint64]uint64
 
-func allPrimeFactors(n uint64) (PPTable, []uint64) {
+func factorize(n uint64) (PPTable, []uint64) {
 	var primes []uint64
 	var pows = make(PPTable)
 	for i := uint64(2); i <= n; i++ {

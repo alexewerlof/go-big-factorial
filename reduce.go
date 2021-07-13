@@ -70,7 +70,7 @@ func merge(pows PPBigTable, primes []uint64) PPBigTable {
 }
 
 func allMergedReducedPrimeFactors(n uint64) PPBigTable {
-	pows, primes := allPrimeFactors(n)
+	pows, primes := factorize(n)
 
 	return merge(reduce(pows), primes)
 }
