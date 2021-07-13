@@ -31,7 +31,7 @@ func TestPrimeFactors(t *testing.T) {
 	}
 
 	for n, expected := range knownResults {
-		result := primeFactors(6, primes)
+		result := primeFactors(n, primes)
 		if !sliceEq(result, expected) {
 			t.Errorf("Could not break %d to its primes\nExpected: %v\nGot:     %v", n, expected, result)
 		}
