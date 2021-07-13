@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/big"
+	"runtime"
 	"time"
 )
 
@@ -12,64 +13,86 @@ var zero = big.NewInt(0)
 var one = big.NewInt(1)
 var two = big.NewInt(2)
 
-func pow(a *big.Int, b uint64, result chan<- *big.Int) {
+type PowArgs struct {
+	x *big.Int
+	n uint64
+}
+
+func pow(ppBig PowArgs) *big.Int {
 	if log {
 		// fmt.Println(a, "^", b)
 		var start = time.Now()
 		defer fmt.Println("^", time.Since(start))
 	}
 	var res big.Int
-	if a.Cmp(one) == 0 {
-		result <- a
-	} else if a.Cmp(two) == 0 {
+	if ppBig.x.Cmp(one) == 0 {
+		return ppBig.x
+	} else if ppBig.x.Cmp(two) == 0 {
 		// It is much faster to compute powers of two by just setting a big on an all-zero number
-		result <- res.SetBit(zero, int(b), 1)
+		return res.SetBit(zero, int(ppBig.n), 1)
 	} else {
-		result <- res.Exp(a, toBig(b), nil)
+		return res.Exp(ppBig.x, toBig(ppBig.n), nil)
 	}
 }
 
-func mul(values chan *big.Int, done chan<- bool) {
+type MulArgs struct {
+	a *big.Int
+	b *big.Int
+}
+
+func mul(m MulArgs) *big.Int {
 	if log {
 		// fmt.Println(a, "×", b)
 		var start = time.Now()
 		defer fmt.Println("×", time.Since(start))
 	}
 	var res big.Int
-	values <- res.Mul(<-values, <-values)
-	done <- true
+	return res.Mul(m.a, m.b)
+}
+
+func powWorker(powChan <-chan PowArgs, feedChan chan<- *big.Int) {
+	for ppBig := range powChan {
+		feedChan <- pow(ppBig)
+	}
+}
+
+func feedMulWorkers(feedChan <-chan *big.Int, mulChan chan<- MulArgs, times int) {
+	for i := 0; i < times; i++ {
+		mulChan <- MulArgs{a: <-feedChan, b: <-feedChan}
+	}
+}
+
+func mulWorker(mulChan <-chan MulArgs, feedChan chan<- *big.Int) {
+	for mulBig := range mulChan {
+		feedChan <- mul(mulBig)
+	}
 }
 
 func factorial(n uint64) *big.Int {
 	fmt.Println("Digesting...")
 	primePowers := allMergedReducedPrimeFactors(n)
 	powsLen := len(primePowers)
-	vals := make(chan *big.Int, powsLen)
 	//fmt.Println("Digested to", pows)
-	fmt.Println("\nPowering...")
-	for power, prime := range primePowers {
-		if log {
-			fmt.Println(prime, " ** ", power)
-		}
 
-		if power == 1 {
-			vals <- prime
-		} else {
-			go pow(prime, power, vals)
-		}
+	numWorkers := runtime.GOMAXPROCS(0)
+	powChan := make(chan PowArgs, powsLen)
+	feedChan := make(chan *big.Int, powsLen)
+	mulChan := make(chan MulArgs, powsLen)
+
+	fmt.Println("Using", numWorkers, "workers for powering and multiplication")
+	for i := 0; i < numWorkers; i++ {
+		go powWorker(powChan, feedChan)
+		go mulWorker(mulChan, feedChan)
 	}
+
+	for n, x := range primePowers {
+		powChan <- PowArgs{x: x, n: n}
+	}
+
+	feedMulWorkers(feedChan, mulChan, powsLen-1)
+
 	primePowers = nil
-	fmt.Println("\nMultiplying...")
-	multiOp := make(chan bool)
-	for i := 1; i < powsLen; i++ {
-		go mul(vals, multiOp)
-	}
-	for i := 1; i < powsLen; i++ {
-		x := <-multiOp
-		if log {
-			fmt.Println("One multiplication operation was done", i, x)
-		}
-	}
+
 	fmt.Println("\nDone!")
-	return <-vals
+	return <-feedChan
 }
