@@ -1,23 +1,25 @@
 package main
 
 import (
-	"math/big"
 	"testing"
 )
 
-func TestFactorial5(t *testing.T) {
-	expected := big.NewInt(120)
-	result := factorial(5)
-
-	if result.Cmp(expected) != 0 {
-		t.Error("Failed to compute 5!", result, expected)
+func TestFactorial(t *testing.T) {
+	knownFactorials := map[uint64]string{
+		2: "2",
+		5: "120",
+		// Use: https://www.wolframalpha.com/
+		10: "3628800",
+		20: "2432902008176640000",
+		99: "933262154439441526816992388562667004907159682643816214685929638952175999932299156089414639761565182862536979208272237582511852109168640000000000000000000000",
 	}
-}
 
-func TestFactorial99(t *testing.T) {
-	result := factorial(100)
+	for n, expected := range knownFactorials {
 
-	if result.String() != "933262154439441526816992388562667004907159682643816214685929638952175999932299156089414639761565182862536979208272237582511852109168640000000000000000000000" {
-		t.Error("Failed to compute 99!")
+		result := factorial(n)
+
+		if result.String() != expected {
+			t.Errorf("Failed to compute %d!\nExpected: %s\nGot:      %s", n, expected, result)
+		}
 	}
 }
