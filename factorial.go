@@ -74,7 +74,7 @@ func factorial(n uint64) *big.Int {
 	powsLen := len(primePowers)
 	//fmt.Println("Digested to", pows)
 
-	numWorkers := runtime.GOMAXPROCS(0)
+	numWorkers := runtime.GOMAXPROCS(0) / 2
 	powChan := make(chan PowArgs, powsLen)
 	feedChan := make(chan *big.Int, powsLen)
 	mulChan := make(chan MulArgs, powsLen)
@@ -86,7 +86,7 @@ func factorial(n uint64) *big.Int {
 	}
 
 	for n, x := range primePowers {
-		powChan <- PowArgs{x: x, n: n}
+		powChan <- PowArgs{x, n}
 	}
 
 	feedMulWorkers(feedChan, mulChan, powsLen-1)
