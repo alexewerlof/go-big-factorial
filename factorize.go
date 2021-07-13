@@ -44,20 +44,14 @@ func factorize(n uint64) (PPMap, []uint64) {
 	var primes []uint64
 	var pows = make(PPMap)
 	for i := uint64(2); i <= n; i++ {
-		res := primeFactors(i, primes)
+		pFactors := primeFactors(i, primes)
 		//fmt.Print("/")
-		if len(res) == 1 {
-			primes = append(primes, res[0])
+		if len(pFactors) == 1 {
+			primes = append(primes, pFactors[0])
 			//fmt.Println("Oh a new prime:", res, primes)
 		}
-		for _, r := range res {
-			rInt := uint64(r)
-			_, exists := pows[rInt]
-			if exists {
-				pows[rInt]++
-			} else {
-				pows[rInt] = 1
-			}
+		for _, r := range pFactors {
+			pows[r]++
 		}
 		//fmt.Println("digest", i, res)
 	}
