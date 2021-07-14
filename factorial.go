@@ -54,7 +54,7 @@ func powWorker(powChan <-chan PowArgs, feedChan chan<- *big.Int) {
 	for ppBig := range powChan {
 		feedChan <- pow(ppBig)
 		if log {
-			fmt.Println("feedChan <- ", ppBig.x.String(), " ** ", ppBig.n)
+			fmt.Println("feedChan <- x^y")
 		}
 	}
 }
@@ -72,7 +72,7 @@ func mulWorker(mulChan <-chan MulArgs, feedChan chan<- *big.Int) {
 	for mulBig := range mulChan {
 		feedChan <- mul(mulBig)
 		if log {
-			fmt.Println("feedChan <- ", mulBig.a.String(), " x ", mulBig.b.String())
+			fmt.Println("feedChan <- a×b")
 		}
 	}
 }
@@ -83,7 +83,7 @@ func factorial(n uint64) *big.Int {
 	powsLen := len(primePowers)
 	//fmt.Println("Digested to", pows)
 
-	numWorkers := runtime.GOMAXPROCS(0) / 2
+	numWorkers := runtime.GOMAXPROCS(0) * 2
 	powChan := make(chan PowArgs, powsLen)
 	feedChan := make(chan *big.Int, powsLen)
 	mulChan := make(chan MulArgs, powsLen)
