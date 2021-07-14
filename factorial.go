@@ -79,7 +79,7 @@ func mulWorker(mulChan <-chan MulArgs, feedChan chan<- *big.Int) {
 
 func factorial(n uint64) *big.Int {
 	fmt.Println("Digesting...")
-	primePowers := allMergedReducedPrimeFactors(n)
+	primePowers := factorize(n)
 	powsLen := len(primePowers)
 	//fmt.Println("Digested to", pows)
 
@@ -94,11 +94,8 @@ func factorial(n uint64) *big.Int {
 		go mulWorker(mulChan, feedChan)
 	}
 
-	for n, x := range primePowers {
-		if log {
-			fmt.Println("powChan <- ", x.String(), n)
-		}
-		powChan <- PowArgs{x, n}
+	for x, n := range primePowers {
+		powChan <- PowArgs{toBig(x), n}
 	}
 
 	feedMulWorkers(feedChan, mulChan, powsLen-1)

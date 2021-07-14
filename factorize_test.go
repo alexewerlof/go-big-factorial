@@ -73,7 +73,7 @@ func TestFactorize(t *testing.T) {
 	}
 
 	for n, expected := range knownResults {
-		result, _ := factorize(n)
+		result := factorize(n)
 		if !deepEqualPPMap(result, expected) {
 			t.Errorf("Could not factorize %d correctly\nExpected: %v\nGot:     %v", n, expected, result)
 		}
