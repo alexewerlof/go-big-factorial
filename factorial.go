@@ -6,26 +6,36 @@ import (
 	"runtime"
 )
 
-const log = true
+const log = false
 
-func initPowChan(primePowers PPMap, powChan chan<- PowArgs) {
+type powArgs struct {
+	x *big.Int
+	n uint64
+}
+
+type mulArgs struct {
+	a *big.Int
+	b *big.Int
+}
+
+func initPowChan(primePowers PriPow, powChan chan<- powArgs) {
 	for x, n := range primePowers {
-		powChan <- PowArgs{toBig(x), n}
+		powChan <- powArgs{toBig(x), n}
 	}
 }
 
-func powWorker(powChan <-chan PowArgs, feedChan chan<- *big.Int) {
+func powWorker(powChan <-chan powArgs, feedChan chan<- *big.Int) {
 	for ppBig := range powChan {
-		feedChan <- pow(ppBig)
+		feedChan <- pow(ppBig.x, ppBig.n)
 		if log {
 			fmt.Println("feedChan <- x^y")
 		}
 	}
 }
 
-func feedChanToMulChan(feedChan <-chan *big.Int, mulChan chan<- MulArgs, times int) *big.Int {
+func feedChanToMulChan(feedChan <-chan *big.Int, mulChan chan<- mulArgs, times int) *big.Int {
 	for i := 0; i < times; i++ {
-		mulChan <- MulArgs{a: <-feedChan, b: <-feedChan}
+		mulChan <- mulArgs{a: <-feedChan, b: <-feedChan}
 		if log {
 			fmt.Println("mulChan <- two numbers")
 		}
@@ -35,9 +45,9 @@ func feedChanToMulChan(feedChan <-chan *big.Int, mulChan chan<- MulArgs, times i
 	return <-feedChan
 }
 
-func mulWorker(mulChan <-chan MulArgs, feedChan chan<- *big.Int) {
+func mulWorker(mulChan <-chan mulArgs, feedChan chan<- *big.Int) {
 	for mulBig := range mulChan {
-		feedChan <- mul(mulBig)
+		feedChan <- mul(mulBig.a, mulBig.b)
 		if log {
 			fmt.Println("feedChan <- a×b")
 		}
@@ -48,12 +58,11 @@ func factorial(n uint64) *big.Int {
 	fmt.Println("Digesting...")
 	primePowers := factorize(n)
 	powsLen := len(primePowers)
-	//fmt.Println("Digested to", pows)
 
 	numWorkers := runtime.GOMAXPROCS(0)
-	powChan := make(chan PowArgs)
+	powChan := make(chan powArgs)
 	feedChan := make(chan *big.Int)
-	mulChan := make(chan MulArgs, powsLen)
+	mulChan := make(chan mulArgs, powsLen)
 
 	fmt.Println("Using", numWorkers, "workers for powering and multiplication")
 	for i := 0; i < numWorkers; i++ {

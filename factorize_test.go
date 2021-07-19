@@ -23,7 +23,7 @@ func deepEqualSliceUint64(slice1, slice2 []uint64) bool {
 }
 
 // deepEqualPPMap tests whether two PPMap structs contain the same elements.
-func deepEqualPPMap(ppMap1, ppMap2 PPMap) bool {
+func deepEqualPPMap(ppMap1, ppMap2 PriPow) bool {
 	if len(ppMap1) != len(ppMap2) {
 		return false
 	}
@@ -54,7 +54,7 @@ func TestPrimeFactors(t *testing.T) {
 }
 
 func TestFactorize(t *testing.T) {
-	knownResults := map[uint64]PPMap{
+	knownResults := map[uint64]PriPow{
 		2: {2: 1},
 		10: {
 			7: 1,
