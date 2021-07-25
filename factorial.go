@@ -22,6 +22,7 @@ func initPowChan(primePowers PriPow, powChan chan<- powArgs) {
 	for x, n := range primePowers {
 		powChan <- powArgs{toBig(x), n}
 	}
+	close(powChan)
 }
 
 func powWorker(powChan <-chan powArgs, feedChan chan<- *big.Int) {
@@ -41,6 +42,7 @@ func feedChanToMulChan(feedChan <-chan *big.Int, mulChan chan<- mulArgs, times i
 		}
 	}
 
+	defer close(mulChan)
 	defer fmt.Println("\nDone!")
 	return <-feedChan
 }
@@ -71,6 +73,7 @@ func factorial(n uint64) *big.Int {
 	}
 
 	go initPowChan(primePowers, powChan)
+	defer close(feedChan)
 
 	return feedChanToMulChan(feedChan, mulChan, powsLen-1)
 }
