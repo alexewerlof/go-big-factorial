@@ -5,7 +5,7 @@ standard library together with go routines.
 
 ## How does it work?
 
-You run it like a CLI and give it a number larger than 2 like this:
+You run the CLI and give it a number larger than 2 like this:
 
 ```bash
 go run . 100

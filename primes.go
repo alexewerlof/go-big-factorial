@@ -1,11 +1,7 @@
 package main
 
-import (
-	"math"
-)
-
 func isPrime(x uint64, primes []uint64) bool {
-	xSqrt := uint64(math.Sqrt(float64(x)))
+	xSqrt := sqrt(x)
 
 	for _, prime := range primes {
 		if prime > xSqrt {
