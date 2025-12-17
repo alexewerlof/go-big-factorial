@@ -1,37 +1,28 @@
 package main
 
-func isPrime(x uint64, primes []uint64) bool {
-	xSqrt := sqrt(x)
-
-	for _, prime := range primes {
-		if prime > xSqrt {
-			break
-		}
-		if x%prime == 0 {
-			return false
-		}
-	}
-	return true
-}
-
 func primesUnder(max uint64) []uint64 {
-	initialPrimes := []uint64{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}
+	if max <= 2 {
+		return nil
+	}
+	// Sieve of Eratosthenes
+	isPrime := make([]bool, max)
+	for i := range isPrime {
+		isPrime[i] = true
+	}
+	// 0 and 1 are not primes
+	// We start loop from 2.
+	for p := uint64(2); p*p < max; p++ {
+		if isPrime[p] {
+			for i := p * p; i < max; i += p {
+				isPrime[i] = false
+			}
+		}
+	}
 	var primes []uint64
-	for _, p := range initialPrimes {
-		if p >= max {
-			return primes
-		}
-		primes = append(primes, p)
-	}
-
-	for i := uint64(101); i < max; i += 2 {
-		if i%5 == 0 {
-			continue
-		}
-		if isPrime(i, primes) {
-			primes = append(primes, i)
+	for i := uint64(2); i < max; i++ {
+		if isPrime[i] {
+			primes = append(primes, uint64(i))
 		}
 	}
-
 	return primes
 }
