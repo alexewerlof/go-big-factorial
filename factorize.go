@@ -1,31 +1,5 @@
 package main
 
-func getFirstPrimeFactor(x uint64, primes []uint64) uint64 {
-	xSqrt := sqrt(x)
-	for _, prime := range primes {
-		if prime > xSqrt {
-			break
-		}
-		if x%prime == 0 {
-			return prime
-		}
-	}
-	return x
-}
-
-func primeFactors(n uint64, primes []uint64) (res []uint64) {
-	x := n
-	for {
-		p := getFirstPrimeFactor(x, primes)
-		res = append(res, p)
-		if x == p {
-			break
-		}
-		x /= p
-	}
-	return
-}
-
 // PriPow is a map of prime factors (keys) and their power (value)
 type PriPow map[uint64]uint64
 

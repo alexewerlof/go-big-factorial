@@ -4,76 +4,65 @@ import (
 	"fmt"
 	"math/big"
 	"runtime"
+	"sync"
 )
 
 const log = false
 
-type powArgs struct {
-	x *big.Int
-	n uint64
-}
-
-type mulArgs struct {
-	a *big.Int
-	b *big.Int
-}
-
-func initPowChan(primePowers PriPow, powChan chan<- powArgs) {
-	for x, n := range primePowers {
-		powChan <- powArgs{toBig(x), n}
+func productTree(nums []*big.Int) *big.Int {
+	if len(nums) == 0 {
+		return big.NewInt(1)
 	}
-	close(powChan)
-}
-
-func powWorker(powChan <-chan powArgs, feedChan chan<- *big.Int) {
-	for ppBig := range powChan {
-		feedChan <- pow(ppBig.x, ppBig.n)
-		if log {
-			fmt.Println("feedChan <- x^y")
-		}
+	if len(nums) == 1 {
+		return nums[0]
 	}
+	mid := len(nums) / 2
+	return mul(productTree(nums[:mid]), productTree(nums[mid:]))
 }
 
-func feedChanToMulChan(feedChan <-chan *big.Int, mulChan chan<- mulArgs, times int) *big.Int {
-	for i := 0; i < times; i++ {
-		mulChan <- mulArgs{a: <-feedChan, b: <-feedChan}
-		if log {
-			fmt.Println("mulChan <- two numbers")
-		}
-	}
-
-	defer close(mulChan)
-	defer fmt.Println("\nDone!")
-	return <-feedChan
-}
-
-func mulWorker(mulChan <-chan mulArgs, feedChan chan<- *big.Int) {
-	for mulBig := range mulChan {
-		feedChan <- mul(mulBig.a, mulBig.b)
-		if log {
-			fmt.Println("feedChan <- a×b")
-		}
-	}
-}
 
 func factorial(n uint64) *big.Int {
 	fmt.Println("Digesting...")
 	primePowers := factorize(n)
-	powsLen := len(primePowers)
 
 	numWorkers := runtime.GOMAXPROCS(0)
-	powChan := make(chan powArgs)
-	feedChan := make(chan *big.Int)
-	mulChan := make(chan mulArgs, powsLen)
+	fmt.Println("Using", numWorkers, "workers for powering")
 
-	fmt.Println("Using", numWorkers, "workers for powering and multiplication")
+	// Input channel for jobs
+	type job struct {
+		p, k uint64
+	}
+	jobs := make(chan job, len(primePowers))
+	results := make(chan *big.Int, len(primePowers))
+
+	// Spawn workers
+	var wg sync.WaitGroup
 	for i := 0; i < numWorkers; i++ {
-		go powWorker(powChan, feedChan)
-		go mulWorker(mulChan, feedChan)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for j := range jobs {
+				results <- pow(toBig(j.p), j.k)
+			}
+		}()
 	}
 
-	go initPowChan(primePowers, powChan)
-	defer close(feedChan)
+	// Send jobs
+	for p, k := range primePowers {
+		jobs <- job{p, k}
+	}
+	close(jobs)
 
-	return feedChanToMulChan(feedChan, mulChan, powsLen-1)
+	// Wait for workers
+	wg.Wait()
+	close(results)
+
+	// Collect results
+	nums := make([]*big.Int, 0, len(primePowers))
+	for res := range results {
+		nums = append(nums, res)
+	}
+
+	fmt.Println("Multiplying...")
+	return productTree(nums)
 }
